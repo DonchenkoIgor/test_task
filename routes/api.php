@@ -27,3 +27,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('products', ProductController::class);
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('comments/{product}', [\App\Http\Controllers\Api\CommentController::class, 'index']);
+    Route::post('comments/{product}', [\App\Http\Controllers\Api\CommentController::class, 'store']);
+    Route::delete('comments/{comment}', [\App\Http\Controllers\Api\CommentController::class, 'destroy']);
+});
