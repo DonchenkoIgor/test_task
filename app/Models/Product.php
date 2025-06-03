@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -11,7 +12,7 @@ class Product extends Model
 
     protected $fillable = ['name', 'description', 'price', 'category', 'image'];
 
-    public function comments()
+    public function comments() : HasMany
     {
         return $this->hasMany(Comment::class);
     }
@@ -29,5 +30,10 @@ class Product extends Model
     public function scopePopular($query)
     {
         return $query->withCount('comments')->orderBy('comments_count', 'desc');
+    }
+
+    public function purchases() : HasMany
+    {
+        return $this->hasMany(Purchase::class);
     }
 }
