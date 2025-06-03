@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    private const PAGINATION_PER_PAGE = 10;
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = Product::query();
 
@@ -29,10 +33,10 @@ class ProductController extends Controller
 
         if ($request->has('sort') && $request->sort === 'popular') {
             $query->withCount('comments')
-            ->orderBy('comments_count', 'desc');
+                ->orderBy('comments_count', 'desc');
         }
 
-        $products = $query->paginate(10);
+        $products = $query->paginate(self::PAGINATION_PER_PAGE);
 
         return response()->json($products);
     }
@@ -40,17 +44,9 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required',
-            'category' => 'required|string',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
-        ]);
-
-        $product = Product::create($validatedData);
+        $product = Product::create($request->validated());
 
         return response()->json([
             'message' => 'Product created successfully',
@@ -61,7 +57,7 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id): JsonResponse
     {
         $product = Product::findOrFail($id);
 
@@ -71,29 +67,25 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateProductRequest $request, string $id): JsonResponse
     {
         $product = Product::findOrFail($id);
 
-        $validatedData = $request->validate([
-            'name' => 'string|max:255',
-            'description' => 'string|nullable',
-            'price' => 'numeric',
-            'category' => 'string|nullable',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable',
+        $product->update($request->validated());
+
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'data' => $product
         ]);
-
-        $product->update($validatedData);
-
-        return response()->json($product);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
         $product = Product::findOrFail($id);
+
         $product->delete();
 
         return response()->json(['message' => 'Product deleted successfully.']);

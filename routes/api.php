@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\PurchaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,20 +18,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', fn(Request $request) => $request->user());
+
     Route::apiResource('products', ProductController::class);
-});
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('comments/{product}', [\App\Http\Controllers\Api\CommentController::class, 'index']);
-    Route::post('comments/{product}', [\App\Http\Controllers\Api\CommentController::class, 'store']);
-    Route::delete('comments/{comment}', [\App\Http\Controllers\Api\CommentController::class, 'destroy']);
+    Route::get('comments/{product}', [CommentController::class, 'index']);
+    Route::post('comments/{product}', [CommentController::class, 'store']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+
+    Route::get('/purchases', [PurchaseController::class, 'index']);
+    Route::post('/purchases', [PurchaseController::class, 'store']);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
